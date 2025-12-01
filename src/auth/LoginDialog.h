@@ -6,6 +6,7 @@
 #include <QPushButton>
 #include <QCheckBox>
 #include <QLabel>
+#include <QGraphicsDropShadowEffect>
 
 class LoginDialog : public QDialog
 {
@@ -29,6 +30,7 @@ private:
     void loadSettings();
     void saveSettings();
     bool validateInput();
+    QGraphicsDropShadowEffect* createShadowEffect();
 
 private:
     QLineEdit* m_usernameEdit;

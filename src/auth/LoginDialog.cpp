@@ -7,6 +7,8 @@
 #include <QSettings>
 #include <QCryptographicHash>
 #include <QMessageBox>
+#include <QGraphicsDropShadowEffect>
+#include <QFrame>
 
 LoginDialog::LoginDialog(QWidget *parent)
     : QDialog(parent)
@@ -23,149 +25,234 @@ LoginDialog::LoginDialog(QWidget *parent)
 
 void LoginDialog::setupUi()
 {
-    setWindowTitle("用户登录 - 资金分析系统");
-    setFixedSize(400, 280);
+    // 去除标题栏和边框
+    setWindowFlags(Qt::Dialog | Qt::FramelessWindowHint);
+    setAttribute(Qt::WA_TranslucentBackground);
+    setFixedSize(450, 520);
     setModal(true);
+    
+    // 设置对话框背景渐变（科技蓝）
+    setStyleSheet(R"(
+        QDialog {
+            background: qlineargradient(x1:0, y1:0, x2:1, y2:1,
+                                        stop:0 #1e3c72, stop:1 #2a5298);
+        }
+    )");
     
     // 主布局
     QVBoxLayout* mainLayout = new QVBoxLayout(this);
-    mainLayout->setSpacing(15);
-    mainLayout->setContentsMargins(20, 20, 20, 20);
+    mainLayout->setSpacing(0);
+    mainLayout->setContentsMargins(30, 30, 30, 30);
+    
+    // 创建白色卡片容器
+    QWidget* cardWidget = new QWidget(this);
+    cardWidget->setStyleSheet(R"(
+        QWidget {
+            background: white;
+            border-radius: 15px;
+        }
+    )");
+    cardWidget->setGraphicsEffect(createShadowEffect());
+    
+    QVBoxLayout* cardLayout = new QVBoxLayout(cardWidget);
+    cardLayout->setSpacing(20);
+    cardLayout->setContentsMargins(40, 40, 40, 40);
+    
+    // Logo/图标区域
+    QLabel* logoLabel = new QLabel("💰", this);
+    logoLabel->setAlignment(Qt::AlignCenter);
+    logoLabel->setStyleSheet(R"(
+        QLabel {
+            font-size: 48pt;
+            padding: 10px;
+        }
+    )");
+    cardLayout->addWidget(logoLabel);
     
     // 标题
     QLabel* titleLabel = new QLabel("资金分析系统", this);
     titleLabel->setAlignment(Qt::AlignCenter);
     titleLabel->setStyleSheet(R"(
         QLabel {
-            font-size: 18pt;
+            font-size: 22pt;
             font-weight: bold;
-            color: #0078d4;
-            padding: 10px;
+            color: #2d3748;
+            padding: 5px;
         }
     )");
-    mainLayout->addWidget(titleLabel);
+    cardLayout->addWidget(titleLabel);
     
-    // 登录表单组
-    QGroupBox* formGroup = new QGroupBox("请输入登录信息", this);
-    formGroup->setStyleSheet(R"(
-        QGroupBox {
+    // 副标题
+    QLabel* subtitleLabel = new QLabel("欢迎使用，请登录您的账户", this);
+    subtitleLabel->setAlignment(Qt::AlignCenter);
+    subtitleLabel->setStyleSheet(R"(
+        QLabel {
             font-size: 10pt;
-            font-weight: bold;
-            border: 2px solid #d0d0d0;
-            border-radius: 5px;
-            margin-top: 10px;
-            padding-top: 10px;
-        }
-        QGroupBox::title {
-            subcontrol-origin: margin;
-            left: 10px;
-            padding: 0 5px;
+            color: #718096;
+            padding-bottom: 10px;
         }
     )");
+    cardLayout->addWidget(subtitleLabel);
     
-    QFormLayout* formLayout = new QFormLayout(formGroup);
-    formLayout->setSpacing(10);
-    formLayout->setContentsMargins(15, 20, 15, 15);
+    // 表单布局
+    QVBoxLayout* formLayout = new QVBoxLayout();
+    formLayout->setSpacing(80);  // 设置为15px间距
+    formLayout->setContentsMargins(0, 0, 0, 0);
     
-    // 用户名输入
+    // 用户名输入框（独立圆角）
     m_usernameEdit = new QLineEdit(this);
     m_usernameEdit->setPlaceholderText("请输入用户名");
-    m_usernameEdit->setMinimumHeight(30);
+    m_usernameEdit->setMinimumHeight(48);
     m_usernameEdit->setStyleSheet(R"(
         QLineEdit {
-            border: 1px solid #d0d0d0;
-            border-radius: 3px;
-            padding: 5px 10px;
-            font-size: 10pt;
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 12px 15px;
+            font-size: 11pt;
+            background: #f7fafc;
+            color: #2d3748;
+            margin-bottom: 0px;
         }
         QLineEdit:focus {
-            border: 2px solid #0078d4;
+            border: 2px solid #2a5298;
+            background: white;
+        }
+        QLineEdit:hover {
+            border: 2px solid #cbd5e0;
         }
     )");
     connect(m_usernameEdit, &QLineEdit::textChanged, this, &LoginDialog::onUsernameChanged);
+    formLayout->addWidget(m_usernameEdit);
     
-    // 密码输入
+    // 密码输入框（独立圆角）
     m_passwordEdit = new QLineEdit(this);
     m_passwordEdit->setPlaceholderText("请输入密码");
     m_passwordEdit->setEchoMode(QLineEdit::Password);
-    m_passwordEdit->setMinimumHeight(30);
-    m_passwordEdit->setStyleSheet(m_usernameEdit->styleSheet());
+    m_passwordEdit->setMinimumHeight(48);
+    m_passwordEdit->setStyleSheet(R"(
+        QLineEdit {
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 12px 15px;
+            font-size: 11pt;
+            background: #f7fafc;
+            color: #2d3748;
+            margin-top: 0px;
+        }
+        QLineEdit:focus {
+            border: 2px solid #2a5298;
+            background: white;
+        }
+        QLineEdit:hover {
+            border: 2px solid #cbd5e0;
+        }
+    )");
     connect(m_passwordEdit, &QLineEdit::textChanged, this, &LoginDialog::onPasswordChanged);
     connect(m_passwordEdit, &QLineEdit::returnPressed, this, &LoginDialog::onLoginClicked);
-    
-    formLayout->addRow("用户名:", m_usernameEdit);
-    formLayout->addRow("密  码:", m_passwordEdit);
+    formLayout->addWidget(m_passwordEdit);
     
     // 记住密码选项
     m_rememberCheckBox = new QCheckBox("记住密码", this);
-    formLayout->addRow("", m_rememberCheckBox);
+    m_rememberCheckBox->setStyleSheet(R"(
+        QCheckBox {
+            font-size: 10pt;
+            color: #4a5568;
+            spacing: 8px;
+        }
+        QCheckBox::indicator {
+            width: 18px;
+            height: 18px;
+            border-radius: 4px;
+            border: 2px solid #cbd5e0;
+        }
+        QCheckBox::indicator:checked {
+            background: #2a5298;
+            border: 2px solid #2a5298;
+            image: url(data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTIiIGhlaWdodD0iOSIgdmlld0JveD0iMCAwIDEyIDkiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PHBhdGggZD0iTTEgNEw0LjUgNy41TDExIDEiIHN0cm9rZT0id2hpdGUiIHN0cm9rZS13aWR0aD0iMiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIi8+PC9zdmc+);
+        }
+        QCheckBox::indicator:hover {
+            border: 2px solid #2a5298;
+        }
+    )");
+    formLayout->addWidget(m_rememberCheckBox);
     
-    mainLayout->addWidget(formGroup);
+    cardLayout->addLayout(formLayout);
     
     // 错误提示标签
     m_errorLabel = new QLabel(this);
     m_errorLabel->setAlignment(Qt::AlignCenter);
-    m_errorLabel->setStyleSheet("QLabel { color: red; font-size: 9pt; }");
+    m_errorLabel->setStyleSheet(R"(
+        QLabel {
+            color: #e53e3e;
+            font-size: 10pt;
+            background: #fff5f5;
+            border: 1px solid #feb2b2;
+            border-radius: 6px;
+            padding: 8px 12px;
+        }
+    )");
     m_errorLabel->setVisible(false);
-    mainLayout->addWidget(m_errorLabel);
+    cardLayout->addWidget(m_errorLabel);
     
-    // 按钮布局
-    QHBoxLayout* buttonLayout = new QHBoxLayout();
-    buttonLayout->setSpacing(10);
-    
-    m_loginButton = new QPushButton("登录", this);
-    m_loginButton->setMinimumHeight(35);
+    // 登录按钮
+    m_loginButton = new QPushButton("登 录", this);
+    m_loginButton->setMinimumHeight(48);
     m_loginButton->setEnabled(false);
+    m_loginButton->setCursor(Qt::PointingHandCursor);
     m_loginButton->setStyleSheet(R"(
         QPushButton {
-            background: #0078d4;
+            background: qlineargradient(x1:0, y1:0, x2:1, y2:0,
+                                        stop:0 #1e3c72, stop:1 #2a5298);
             color: white;
             border: none;
-            border-radius: 3px;
-            font-size: 10pt;
+            border-radius: 8px;
+            font-size: 12pt;
             font-weight: bold;
-            padding: 5px 30px;
+            letter-spacing: 2px;
         }
         QPushButton:hover {
-            background: #0063b1;
+            background: qlineargradient(x1:0, y1:0, x2:1, y2:0,
+                                        stop:0 #163056, stop:1 #1f4278);
         }
         QPushButton:pressed {
-            background: #005a9e;
+            background: qlineargradient(x1:0, y1:0, x2:1, y2:0,
+                                        stop:0 #0f2440, stop:1 #163056);
         }
         QPushButton:disabled {
-            background: #cccccc;
-            color: #888888;
+            background: #e2e8f0;
+            color: #a0aec0;
         }
     )");
     connect(m_loginButton, &QPushButton::clicked, this, &LoginDialog::onLoginClicked);
+    cardLayout->addWidget(m_loginButton);
     
-    m_cancelButton = new QPushButton("取消", this);
-    m_cancelButton->setMinimumHeight(35);
+    // 取消按钮
+    m_cancelButton = new QPushButton("取 消", this);
+    m_cancelButton->setMinimumHeight(48);
+    m_cancelButton->setCursor(Qt::PointingHandCursor);
     m_cancelButton->setStyleSheet(R"(
         QPushButton {
-            background: white;
-            color: #333333;
-            border: 1px solid #d0d0d0;
-            border-radius: 3px;
-            font-size: 10pt;
-            padding: 5px 30px;
+            background: transparent;
+            color: #4a5568;
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+            font-size: 11pt;
+            font-weight: 500;
+            letter-spacing: 2px;
         }
         QPushButton:hover {
-            background: #f0f0f0;
+            background: #f7fafc;
+            border: 2px solid #cbd5e0;
+            color: #2d3748;
         }
         QPushButton:pressed {
-            background: #e0e0e0;
+            background: #edf2f7;
         }
     )");
     connect(m_cancelButton, &QPushButton::clicked, this, &LoginDialog::onCancelClicked);
+    cardLayout->addWidget(m_cancelButton);
     
-    buttonLayout->addStretch();
-    buttonLayout->addWidget(m_loginButton);
-    buttonLayout->addWidget(m_cancelButton);
-    buttonLayout->addStretch();
-    
-    mainLayout->addLayout(buttonLayout);
-    
+    mainLayout->addWidget(cardWidget);
     setLayout(mainLayout);
 }
 
@@ -237,6 +324,15 @@ bool LoginDialog::validateInput()
     }
     
     return true;
+}
+
+QGraphicsDropShadowEffect* LoginDialog::createShadowEffect()
+{
+    QGraphicsDropShadowEffect* shadow = new QGraphicsDropShadowEffect(this);
+    shadow->setBlurRadius(30);
+    shadow->setColor(QColor(0, 0, 0, 60));
+    shadow->setOffset(0, 10);
+    return shadow;
 }
 
 void LoginDialog::onLoginClicked()
