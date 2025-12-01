@@ -1,0 +1,54 @@
+# Build directories
+build/
+cmake-build-*/
+out/
+
+# IDE
+.vs/
+.vscode/
+.idea/
+*.user
+*.suo
+*.sln.docstates
+
+# Compiled files
+*.exe
+*.dll
+*.so
+*.dylib
+*.o
+*.obj
+
+# Qt
+*.qm
+*.pro.user
+*.autosave
+moc_*.cpp
+qrc_*.cpp
+ui_*.h
+
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+venv/
+.env
+
+# Database
+database/*.db
+database/*.db-wal
+database/*.db-shm
+
+# Storage
+storage/original_files/*
+storage/exports/*
+storage/backups/*
+!storage/.gitkeep
+
+# Logs
+*.log
+logs/
+
+# OS
+.DS_Store
+Thumbs.db
